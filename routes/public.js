@@ -4,34 +4,34 @@ const { getDb, getAllConfig } = require('../database/init');
 const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const db = getDb();
-  const servicios = db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
-  const galeria = db.prepare('SELECT * FROM galeria WHERE destacado = 1 ORDER BY created_at DESC LIMIT 6').all();
-  const testimonios = db.prepare('SELECT * FROM testimonios WHERE aprobado = 1 ORDER BY created_at DESC').all();
+  const servicios = await db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
+  const galeria = await db.prepare('SELECT * FROM galeria WHERE destacado = 1 ORDER BY created_at DESC LIMIT 6').all();
+  const testimonios = await db.prepare('SELECT * FROM testimonios WHERE aprobado = 1 ORDER BY created_at DESC').all();
   res.render('home', { servicios, galeria, testimonios });
 });
 
-router.get('/servicios', (req, res) => {
+router.get('/servicios', async (req, res) => {
   const db = getDb();
-  const servicios = db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
+  const servicios = await db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
   res.render('servicios', { servicios });
 });
 
-router.get('/galeria', (req, res) => {
+router.get('/galeria', async (req, res) => {
   const db = getDb();
-  const items = db.prepare('SELECT * FROM galeria ORDER BY created_at DESC').all();
-  const servicios = db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
+  const items = await db.prepare('SELECT * FROM galeria ORDER BY created_at DESC').all();
+  const servicios = await db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
   res.render('galeria', { items, servicios });
 });
 
-router.get('/agendar', (req, res) => {
+router.get('/agendar', async (req, res) => {
   const db = getDb();
-  const servicios = db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
+  const servicios = await db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
   
   let turnoConfirmado = null;
   if (req.query.success && req.query.turno) {
-    turnoConfirmado = db.prepare(`
+    turnoConfirmado = await db.prepare(`
       SELECT t.*, s.nombre as servicio_nombre 
       FROM turnos t 
       LEFT JOIN servicios s ON t.servicio_id = s.id 
@@ -42,9 +42,9 @@ router.get('/agendar', (req, res) => {
   res.render('agendar', { servicios, success: req.query.success, error: null, servicio: req.query.servicio, turnoConfirmado });
 });
 
-router.get('/agendar/comprobante/:id', (req, res) => {
+router.get('/agendar/comprobante/:id', async (req, res) => {
   const db = getDb();
-  const turno = db.prepare(`
+  const turno = await db.prepare(`
     SELECT t.*, s.nombre as servicio_nombre 
     FROM turnos t 
     LEFT JOIN servicios s ON t.servicio_id = s.id 
@@ -55,7 +55,7 @@ router.get('/agendar/comprobante/:id', (req, res) => {
     return res.status(404).send('Turno no encontrado');
   }
 
-  const config = getAllConfig();
+  const config = await getAllConfig();
   const fParts = turno.fecha.split('-');
   const fStr = fParts[2] + '/' + fParts[1] + '/' + fParts[0];
 
@@ -94,7 +94,7 @@ router.get('/agendar/comprobante/:id', (req, res) => {
   doc.end();
 });
 
-router.post('/agendar', (req, res) => {
+router.post('/agendar', async (req, res) => {
   const db = getDb();
   const { nombre_cliente, telefono, email, servicio_id, fecha, hora, notas, website } = req.body;
 
@@ -104,25 +104,25 @@ router.post('/agendar', (req, res) => {
   }
 
   if (!nombre_cliente || !telefono || !servicio_id || !fecha || !hora) {
-    const servicios = db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
+    const servicios = await db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
     return res.render('agendar', { servicios, success: null, error: 'Faltan campos obligatorios' });
   }
 
   // Check availability
-  const check = db.prepare('SELECT id FROM turnos WHERE fecha = ? AND hora = ? AND estado != ?').get(fecha, hora, 'cancelado');
+  const check = await db.prepare('SELECT id FROM turnos WHERE fecha = ? AND hora = ? AND estado != ?').get(fecha, hora, 'cancelado');
   if (check) {
-    const servicios = db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
+    const servicios = await db.prepare('SELECT * FROM servicios WHERE activo = 1 ORDER BY orden ASC').all();
     return res.render('agendar', { servicios, success: null, error: 'El horario seleccionado ya no está disponible' });
   }
 
-  db.prepare('INSERT INTO turnos (nombre_cliente, telefono, email, servicio_id, fecha, hora, notas) VALUES (?, ?, ?, ?, ?, ?, ?)')
+  const insertResult = await db.prepare('INSERT INTO turnos (nombre_cliente, telefono, email, servicio_id, fecha, hora, notas) VALUES (?, ?, ?, ?, ?, ?, ?)')
     .run(nombre_cliente, telefono, email || null, servicio_id, fecha, hora, notas || null);
   
-  const insertedId = db.prepare('SELECT last_insert_rowid() as id').get().id;
+  const insertedId = insertResult.lastInsertRowid;
   
   // Send email asynchronously if email is provided
   if (email) {
-    const config = getAllConfig();
+    const config = await getAllConfig();
     if (config.email_user && config.email_pass && config.email_host) {
       const transporter = nodemailer.createTransport({
         host: config.email_host,
@@ -134,7 +134,8 @@ router.post('/agendar', (req, res) => {
         }
       });
       
-      const servicioName = db.prepare('SELECT nombre FROM servicios WHERE id = ?').get(servicio_id)?.nombre || 'Servicio';
+      const servicioRow = await db.prepare('SELECT nombre FROM servicios WHERE id = ?').get(servicio_id);
+      const servicioName = (servicioRow && servicioRow.nombre) || 'Servicio';
       const [year, month, day] = fecha.split('-');
       const formattedDate = `${day}/${month}/${year}`;
       const userMessage = config.email_mensaje_agradecimiento || `¡Gracias por elegir ${config.nombre_negocio || 'nosotros'}! Te esperamos.`;
@@ -159,21 +160,21 @@ router.post('/agendar', (req, res) => {
         `
       };
 
-      transporter.sendMail(mailOptions).catch(err => console.error('Error sending confirmation email:', err));
+      await transporter.sendMail(mailOptions).catch(err => console.error('Error sending confirmation email:', err));
     }
   }
 
   res.redirect('/agendar?success=1&turno=' + insertedId);
 });
 
-router.get('/api/horarios-disponibles/:fecha', (req, res) => {
+router.get('/api/horarios-disponibles/:fecha', async (req, res) => {
   const db = getDb();
   const { fecha } = req.params;
   const dateObj = new Date(fecha + 'T12:00:00Z');
   const days = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
   const dayName = days[dateObj.getDay()];
   
-  const config = getAllConfig();
+  const config = await getAllConfig();
   const horario = config[`horario_${dayName}`];
   
   if (!horario || horario.toLowerCase() === 'cerrado') {
@@ -181,7 +182,7 @@ router.get('/api/horarios-disponibles/:fecha', (req, res) => {
   }
 
   // Check blocked
-  const isBlocked = db.prepare('SELECT id FROM horarios_bloqueados WHERE fecha = ?').get(fecha);
+  const isBlocked = await db.prepare('SELECT id FROM horarios_bloqueados WHERE fecha = ?').get(fecha);
   if (isBlocked) {
     return res.json([]);
   }
@@ -202,20 +203,20 @@ router.get('/api/horarios-disponibles/:fecha', (req, res) => {
   }
 
   // Check turnos
-  const turnos = db.prepare('SELECT hora FROM turnos WHERE fecha = ? AND estado != ?').all(fecha, 'cancelado');
+  const turnos = await db.prepare('SELECT hora FROM turnos WHERE fecha = ? AND estado != ?').all(fecha, 'cancelado');
   const occupied = turnos.map(t => t.hora);
   
   const available = allSlots.filter(s => !occupied.includes(s));
   res.json(available);
 });
 
-router.get('/api/galeria', (req, res) => {
+router.get('/api/galeria', async (req, res) => {
   const db = getDb();
   let items;
   if (req.query.servicio_id) {
-    items = db.prepare('SELECT * FROM galeria WHERE servicio_id = ? ORDER BY created_at DESC').all(req.query.servicio_id);
+    items = await db.prepare('SELECT * FROM galeria WHERE servicio_id = ? ORDER BY created_at DESC').all(req.query.servicio_id);
   } else {
-    items = db.prepare('SELECT * FROM galeria ORDER BY created_at DESC').all();
+    items = await db.prepare('SELECT * FROM galeria ORDER BY created_at DESC').all();
   }
   res.json(items);
 });

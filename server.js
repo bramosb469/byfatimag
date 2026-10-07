@@ -10,13 +10,15 @@ const { initDatabase, getAllConfig, seedAdmin } = require('./database/init');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+require('express-async-errors');
 const isVercel = process.env.VERCEL === '1';
-const publicUploads = isVercel ? path.join('/tmp', 'public', 'uploads') : path.join(__dirname, 'public', 'uploads');
-const dataDir = isVercel ? path.join('/tmp', 'data') : path.join(__dirname, 'data');
-if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
-if (!fs.existsSync(publicUploads)) fs.mkdirSync(publicUploads, { recursive: true });
-if (!fs.existsSync(path.join(publicUploads, 'galeria'))) fs.mkdirSync(path.join(publicUploads, 'galeria'), { recursive: true });
-if (!fs.existsSync(path.join(publicUploads, 'servicios'))) fs.mkdirSync(path.join(publicUploads, 'servicios'), { recursive: true });
+if (!isVercel) {
+  const publicUploads = path.join(__dirname, 'public', 'uploads');
+  ['galeria', 'servicios'].forEach(d => {
+    const dir = path.join(publicUploads, d);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  });
+}
 
 // Helmet config
 app.use(helmet({
@@ -26,8 +28,8 @@ app.use(helmet({
       fontSrc: ["'self'", 'fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'unpkg.com'],
       styleSrc: ["'self'", "'unsafe-inline'", 'fonts.googleapis.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'unpkg.com'],
       scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com', 'unpkg.com'],
-      imgSrc: ["'self'", "data:", "blob:"],
-      mediaSrc: ["'self'", "blob:"],
+      imgSrc: ["'self'", "data:", "blob:", 'https://*.supabase.co'],
+      mediaSrc: ["'self'", "blob:", 'https://*.supabase.co'],
       connectSrc: ["'self'"]
     }
   }
@@ -57,9 +59,12 @@ app.set('views', path.join(__dirname, 'views'));
 let dbReady = null;
 function ensureDb() {
   if (!dbReady) {
-    dbReady = initDatabase().then(() => {
-      seedAdmin(process.env.ADMIN_EMAIL || 'admin@lucejas.com', process.env.ADMIN_PASSWORD || 'admin123');
-    });
+    dbReady = initDatabase()
+      .then(() => seedAdmin(process.env.ADMIN_EMAIL || 'admin@lucejas.com', process.env.ADMIN_PASSWORD || 'admin123'))
+      .catch(err => {
+        dbReady = null; // permitir reintento en el proximo request
+        throw err;
+      });
   }
   return dbReady;
 }
@@ -68,9 +73,9 @@ app.use((req, res, next) => {
 });
 
 // Config Middleware
-app.use((req, res, next) => {
+app.use(async (req, res, next) => {
   try {
-    const config = getAllConfig();
+    const config = await getAllConfig();
     res.locals.config = config;
     res.locals.siteConfig = config;
   } catch (e) {

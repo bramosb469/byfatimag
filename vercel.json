@@ -5,7 +5,7 @@
       "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["views/**", "public/**", "node_modules/sql.js/dist/**"]
+        "includeFiles": ["views/**", "public/**"]
       }
     }
   ],
