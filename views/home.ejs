@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= config.nombre_negocio || 'Lu Cejas' %> - Inicio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background-color: var(--color-bg);">
+  
+  <%- include('partials/header') %>
+
+  <!-- Hero Section -->
+  <section class="hero-section d-flex align-items-center text-center">
+    <div class="container fade-in-up">
+      <h1 class="hero-title font-heading text-white text-uppercase mb-3"><%= config.nombre_negocio %></h1>
+      <p class="hero-subtitle text-white mb-5"><%= config.slogan %></p>
+      <a href="/agendar" class="btn btn-gold text-white rounded-pill px-5 py-3 fs-5">Agendar Turno</a>
+    </div>
+    <div class="scroll-down-indicator text-white">
+      <i class="bi bi-chevron-down fs-2"></i>
+    </div>
+  </section>
+
+  <!-- Servicios Section -->
+  <section id="servicios" class="py-5 section-padding">
+    <div class="container">
+      <div class="text-center mb-5 fade-in-up">
+        <h2 class="font-heading section-title">Nuestros Servicios</h2>
+        <div class="title-decorator"></div>
+      </div>
+      
+      <div class="row g-4 justify-content-center">
+        <% if (servicios && servicios.length > 0) { %>
+          <% servicios.slice(0, 3).forEach(servicio => { %>
+          <div class="col-lg-4 col-md-6 fade-in-up">
+            <div class="card service-card h-100 border-0 rounded-4 overflow-hidden">
+              <div class="card-img-top service-img-placeholder">
+                <% if (servicio.imagen) { %>
+                  <img src="<%= servicio.imagen %>" class="w-100 h-100" style="object-fit: cover;" alt="<%= servicio.nombre %>">
+                <% } %>
+              </div>
+              <div class="card-body p-4 text-center">
+                <h4 class="font-heading mb-3"><%= servicio.nombre %></h4>
+                <p class="text-muted small mb-3">
+                  <i class="bi bi-clock me-1"></i> <%= servicio.duracion_min %> min 
+                  <span class="mx-2">|</span>
+                  <strong class="text-primary-custom">$ <%= servicio.precio.toLocaleString('es-AR') %></strong>
+                </p>
+                <p class="card-text mb-4"><%= servicio.descripcion_corta || servicio.descripcion %></p>
+                <a href="/agendar?servicio=<%= servicio.id %>" class="btn btn-outline-gold rounded-pill px-4">Agendar</a>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        <% } else { %>
+          <div class="col-12 text-center text-muted fade-in-up">
+            <p>Próximamente nuevos servicios.</p>
+          </div>
+        <% } %>
+      </div>
+      
+      <% if (servicios && servicios.length > 3) { %>
+      <div class="text-center mt-5 fade-in-up">
+        <a href="/servicios" class="btn btn-outline-gold rounded-pill px-4">Ver Todos los Servicios</a>
+      </div>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Before/After Section -->
+  <% if (galeria && galeria.length > 0) { %>
+  <section class="py-5 bg-secondary-custom section-padding">
+    <div class="container">
+      <div class="text-center mb-5 fade-in-up">
+        <h2 class="font-heading section-title">Nuestros Resultados</h2>
+        <div class="title-decorator"></div>
+      </div>
+      
+      <div class="gallery-grid">
+        <% galeria.slice(0, 6).forEach(item => { %>
+        <div class="gallery-item fade-in-up">
+          <div class="gallery-img-wrapper rounded-3 overflow-hidden">
+            <img src="<%= item.imagen_url %>" alt="Trabajo" class="w-100 h-100" style="object-fit: cover;">
+            <div class="gallery-overlay d-flex align-items-center justify-content-center">
+              <span class="text-white font-heading h5 mb-0"><%= item.titulo || 'Ver detalle' %></span>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+      </div>
+      
+      <div class="text-center mt-5 fade-in-up">
+        <a href="/galeria" class="btn btn-gold text-white rounded-pill px-4 py-2">Ver Galería Completa</a>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- About Section -->
+  <section class="py-5 section-padding">
+    <div class="container">
+      <div class="row align-items-center gy-5">
+        <div class="col-lg-6 fade-in-up">
+          <div class="about-img-wrapper rounded-4 overflow-hidden shadow-lg">
+            <% if (config.about_imagen) { %>
+              <img src="<%= config.about_imagen %>" alt="Sobre Nosotros" class="w-100 h-100" style="object-fit: cover;">
+            <% } else { %>
+              <div class="about-img-placeholder w-100 h-100"></div>
+            <% } %>
+          </div>
+        </div>
+        <div class="col-lg-6 px-lg-5 fade-in-up">
+          <h2 class="font-heading section-title mb-4"><%= config.about_titulo || 'Sobre Nosotros' %></h2>
+          <div class="title-decorator ms-0 mb-4"></div>
+          <div class="about-text text-muted lh-lg">
+            <p><%= config.about_texto || 'Somos especialistas en realzar tu belleza natural. En nuestro centro, combinamos arte, técnica y dedicación para ofrecerte resultados excepcionales y una experiencia única de relajación y cuidado personal.' %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials Section -->
+  <% if (testimonios && testimonios.length > 0) { %>
+  <section class="py-5 bg-secondary-custom section-padding">
+    <div class="container">
+      <div class="text-center mb-5 fade-in-up">
+        <h2 class="font-heading section-title">Lo que dicen nuestras clientas</h2>
+        <div class="title-decorator"></div>
+      </div>
+      
+      <div id="testimonialCarousel" class="carousel slide fade-in-up" data-bs-ride="carousel">
+        <div class="carousel-inner">
+          <% testimonios.forEach((testimonio, index) => { %>
+          <div class="carousel-item <%= index === 0 ? 'active' : '' %>">
+            <div class="row justify-content-center">
+              <div class="col-md-8 text-center">
+                <i class="bi bi-quote fs-1 text-primary-custom mb-3 d-block opacity-50"></i>
+                <p class="fs-4 fst-italic mb-4 text-muted">"<%= testimonio.texto %>"</p>
+                <div class="d-flex justify-content-center mb-3">
+                  <% for(let i=0; i<5; i++) { %>
+                    <i class="bi bi-star-fill text-warning mx-1"></i>
+                  <% } %>
+                </div>
+                <h5 class="font-heading fw-bold"><%= testimonio.cliente %></h5>
+              </div>
+            </div>
+          </div>
+          <% }) %>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon bg-primary-custom rounded-circle" aria-hidden="true"></span>
+          <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon bg-primary-custom rounded-circle" aria-hidden="true"></span>
+          <span class="visually-hidden">Siguiente</span>
+        </button>
+      </div>
+    </div>
+  </section>
+  <% } %>
+
+  <!-- CTA Section -->
+  <section class="py-5 cta-section text-center text-white section-padding position-relative">
+    <div class="container position-relative z-1 fade-in-up">
+      <h2 class="font-heading display-5 mb-4">¿Lista para transformar tus cejas?</h2>
+      <a href="/agendar" class="btn btn-gold btn-lg text-white rounded-pill px-5 py-3 mt-3">Agendar mi turno</a>
+    </div>
+  </section>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js?v=2"></script>
+</body>
+</html>

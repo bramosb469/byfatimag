@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calendario de Turnos - Panel de Control</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+  <!-- FullCalendar CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css" rel="stylesheet">
+  <style>
+    #calendar {
+      max-width: 100%;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    .fc-event {
+      cursor: pointer;
+    }
+    .fc-toolbar-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="d-flex">
+  <%- include('partials/sidebar', {currentPage: 'calendario'}) %>
+  
+  <main class="main-content flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Calendario de Turnos</h2>
+      <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#nuevoTurnoModal">
+          <i class="bi bi-plus-lg me-1"></i> Bloquear / Nuevo Turno
+        </button>
+        <a href="/admin/turnos" class="btn btn-outline-secondary">Ver como Lista</a>
+      </div>
+    </div>
+
+    <% if (typeof msg !== 'undefined' && msg === 'ok') { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Turno actualizado correctamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <div id="calendar"></div>
+
+  </main>
+</div>
+
+<!-- Modal Nuevo Turno -->
+<div class="modal fade" id="nuevoTurnoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Turno Manualmente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/admin/turnos/nuevo" method="POST">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Cliente (Ej: Bloqueo, o nombre) *</label>
+            <input type="text" name="nombre_cliente" class="form-control" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Teléfono *</label>
+            <input type="text" name="telefono" class="form-control" value="-" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Servicio *</label>
+            <select name="servicio_id" class="form-select" required>
+              <option value="">Seleccione un servicio</option>
+              <% if (typeof servicios !== 'undefined') { servicios.forEach(s => { %>
+                <option value="<%= s.id %>"><%= s.nombre %></option>
+              <% }) } %>
+            </select>
+          </div>
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Fecha *</label>
+              <input type="date" name="fecha" id="modalFecha" class="form-control" required>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label">Hora *</label>
+              <input type="time" name="hora" id="modalHora" class="form-control" required>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Notas (Opcional)</label>
+            <textarea name="notas" class="form-control" rows="2"></textarea>
+          </div>
+          <input type="hidden" name="estado" value="confirmado">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar / Bloquear</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Detalles del Turno -->
+<div class="modal fade" id="turnoModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="turnoTitle">Detalle del Turno</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p><strong>Cliente:</strong> <span id="turnoCliente"></span></p>
+        <p><strong>Contacto:</strong> <span id="turnoContacto"></span></p>
+        <p><strong>Servicio:</strong> <span id="turnoServicio"></span></p>
+        <p><strong>Fecha y Hora:</strong> <span id="turnoFechaHora"></span></p>
+        <p><strong>Estado:</strong> <span id="turnoEstado"></span></p>
+        
+        <hr>
+        <h6>Cambiar Estado:</h6>
+        <div class="d-flex gap-2 mt-2">
+          <form id="formConfirmar" method="POST" class="d-inline">
+            <input type="hidden" name="estado" value="confirmado">
+            <button type="submit" class="btn btn-sm btn-info text-white"><i class="bi bi-check-lg"></i> Confirmar</button>
+          </form>
+          <form id="formCompletar" method="POST" class="d-inline">
+            <input type="hidden" name="estado" value="completado">
+            <button type="submit" class="btn btn-sm btn-success"><i class="bi bi-check-all"></i> Completar</button>
+          </form>
+          <form id="formCancelar" method="POST" class="d-inline">
+            <input type="hidden" name="estado" value="cancelado">
+            <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-x-lg"></i> Cancelar</button>
+          </form>
+          <form id="formEliminar" method="POST" class="d-inline">
+            <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Eliminar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/es.js"></script>
+<script src="/js/admin.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('calendar');
+    var turnoModal = new bootstrap.Modal(document.getElementById('turnoModal'));
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'timeGridWeek',
+      locale: 'es',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      slotMinTime: '08:00:00',
+      slotMaxTime: '21:00:00',
+      allDaySlot: false,
+      selectable: true,
+      select: function(info) {
+        // Pre-fill date and time in the modal
+        var dateStr = info.startStr.split('T')[0];
+        var timeStr = info.startStr.split('T')[1];
+        if (timeStr) timeStr = timeStr.substring(0, 5);
+        
+        document.getElementById('modalFecha').value = dateStr;
+        if (timeStr) document.getElementById('modalHora').value = timeStr;
+        
+        var nuevoModal = new bootstrap.Modal(document.getElementById('nuevoTurnoModal'));
+        nuevoModal.show();
+      },
+      events: '/admin/api/turnos',
+      eventClick: function(info) {
+        var props = info.event.extendedProps;
+        
+        document.getElementById('turnoCliente').textContent = info.event.title;
+        document.getElementById('turnoContacto').textContent = props.telefono;
+        document.getElementById('turnoServicio').textContent = props.servicio;
+        document.getElementById('turnoFechaHora').textContent = info.event.start.toLocaleString('es-AR');
+        
+        var estadoBadge = '';
+        if (props.estado === 'pendiente') estadoBadge = '<span class="badge bg-warning text-dark">Pendiente</span>';
+        else if (props.estado === 'confirmado') estadoBadge = '<span class="badge bg-info text-dark">Confirmado</span>';
+        else if (props.estado === 'completado') estadoBadge = '<span class="badge bg-success">Completado</span>';
+        else estadoBadge = '<span class="badge bg-secondary">' + props.estado + '</span>';
+        document.getElementById('turnoEstado').innerHTML = estadoBadge;
+
+        document.getElementById('formConfirmar').action = '/admin/turnos/' + props.turno_id + '/estado?from=calendario';
+        document.getElementById('formCompletar').action = '/admin/turnos/' + props.turno_id + '/estado?from=calendario';
+        document.getElementById('formCancelar').action = '/admin/turnos/' + props.turno_id + '/estado?from=calendario';
+        document.getElementById('formEliminar').action = '/admin/turnos/' + props.turno_id + '/delete';
+
+        // Ocultar botones según estado
+        document.getElementById('formConfirmar').style.display = (props.estado === 'confirmado' || props.estado === 'completado') ? 'none' : 'inline-block';
+        document.getElementById('formCompletar').style.display = (props.estado === 'completado') ? 'none' : 'inline-block';
+        document.getElementById('formCancelar').style.display = (props.estado === 'cancelado' || props.estado === 'completado') ? 'none' : 'inline-block';
+
+        turnoModal.show();
+      }
+    });
+
+    calendar.render();
+  });
+</script>
+</body>
+</html>

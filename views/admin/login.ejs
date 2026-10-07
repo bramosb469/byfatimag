@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Panel de Control</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background-color: #fdfbf7;
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    h1 {
+      font-family: 'Cormorant Garamond', serif;
+      color: #2c1810;
+    }
+    .login-card {
+      background: white;
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 400px;
+      padding: 2.5rem;
+    }
+    .btn-gold {
+      background-color: #c5a059;
+      color: white;
+      border: none;
+      transition: all 0.3s ease;
+    }
+    .btn-gold:hover {
+      background-color: #b08d4a;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-card text-center">
+    <h1 class="mb-4"><%= locals.config && locals.config.nombre_negocio ? locals.config.nombre_negocio : 'Panel de Control' %></h1>
+    
+    <% if (locals.error) { %>
+      <div class="alert alert-danger" role="alert">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <form action="/admin/login" method="POST">
+      <div class="form-floating mb-3">
+        <input type="email" class="form-control" id="email" name="email" placeholder="nombre@ejemplo.com" required>
+        <label for="email">Correo Electrónico</label>
+      </div>
+      <div class="form-floating mb-4">
+        <input type="password" class="form-control" id="password" name="password" placeholder="Contraseña" required>
+        <label for="password">Contraseña</label>
+      </div>
+      <button class="btn btn-gold w-100 py-2 fs-5" type="submit">Iniciar Sesión</button>
+    </form>
+  </div>
+  
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

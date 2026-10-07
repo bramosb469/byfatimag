@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agendar Turno - <%= config.nombre_negocio || 'Lu Cejas' %></title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body style="background-color: var(--color-bg);">
+  
+  <%- include('partials/header') %>
+
+  <section class="page-hero text-center d-flex align-items-center justify-content-center">
+    <div class="container fade-in-up">
+      <h1 class="font-heading text-white display-4">Agendá tu turno</h1>
+      <div class="title-decorator bg-white mx-auto mt-4"></div>
+    </div>
+  </section>
+
+  <section class="py-5 section-padding">
+    <div class="container max-w-800">
+      
+      <!-- Alerts -->
+      <% if (typeof success !== 'undefined' && success) { %>
+        <% if (typeof turnoConfirmado !== 'undefined' && turnoConfirmado) { 
+            const fParts = turnoConfirmado.fecha.split('-');
+            const fStr = fParts[2] + '/' + fParts[1] + '/' + fParts[0];
+        %>
+          <div class="fade-in-up text-center mb-5">
+            <h2 class="font-heading text-primary-custom mb-3"><i class="bi bi-check-circle-fill me-2"></i>¡Reserva Confirmada!</h2>
+            <p class="text-muted">Hemos enviado los detalles a tu correo (si lo proporcionaste).</p>
+            
+            <div class="card border-0 shadow-lg mx-auto rounded-4 overflow-hidden mt-4 text-start" style="max-width: 400px;" id="ticketReserva">
+              <div class="bg-primary-custom text-white p-4 text-center">
+                <h4 class="font-heading mb-0 text-white"><%= config.nombre_negocio || 'LU CEJAS' %></h4>
+                <small class="opacity-75">Comprobante de Turno</small>
+              </div>
+              <div class="p-4 bg-white">
+                <div class="mb-3 border-bottom pb-3">
+                  <small class="text-muted text-uppercase d-block mb-1">Cliente</small>
+                  <strong class="fs-5 text-dark"><%= turnoConfirmado.nombre_cliente %></strong>
+                </div>
+                <div class="mb-3 border-bottom pb-3">
+                  <small class="text-muted text-uppercase d-block mb-1">Servicio</small>
+                  <strong class="text-dark"><%= turnoConfirmado.servicio_nombre %></strong>
+                </div>
+                <div class="row mb-3">
+                  <div class="col-6">
+                    <small class="text-muted text-uppercase d-block mb-1">Fecha</small>
+                    <strong class="text-dark"><%= fStr %></strong>
+                  </div>
+                  <div class="col-6">
+                    <small class="text-muted text-uppercase d-block mb-1">Hora</small>
+                    <strong class="text-dark"><%= turnoConfirmado.hora %> hs</strong>
+                  </div>
+                </div>
+                <div class="text-center mt-4">
+                  <p class="small text-muted mb-0"><i class="bi bi-geo-alt me-1"></i><%= config.direccion || '' %></p>
+                </div>
+              </div>
+            </div>
+            
+            <style>
+              @media print {
+                body * {
+                  visibility: hidden;
+                }
+                #ticketReserva, #ticketReserva * {
+                  visibility: visible;
+                }
+                #ticketReserva {
+                  position: absolute;
+                  left: 50%;
+                  top: 50%;
+                  transform: translate(-50%, -50%);
+                  width: 100%;
+                  max-width: 400px;
+                  box-shadow: none !important;
+                  border: 2px solid #000 !important;
+                }
+              }
+            </style>
+            
+            <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+              <a href="/agendar/comprobante/<%= turnoConfirmado.id %>" class="btn btn-outline-primary rounded-pill px-4" download>
+                <i class="bi bi-download me-2"></i> Descargar Comprobante PDF
+              </a>
+              <a href="/" class="btn btn-primary rounded-pill px-4 text-white">Volver al Inicio</a>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="alert alert-success alert-dismissible fade show rounded-4 border-0 shadow-sm" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> Tu turno fue agendado con éxito.
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        <% } %>
+      <% } %>
+      
+      <% if (typeof error !== 'undefined' && error) { %>
+        <div class="alert alert-danger alert-dismissible fade show rounded-4 border-0 shadow-sm" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i> <%= error %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      <% } %>
+
+      <% if (!(typeof success !== 'undefined' && success && typeof turnoConfirmado !== 'undefined' && turnoConfirmado)) { %>
+      <!-- Step Indicator -->
+      <div class="step-indicator mb-5 fade-in-up">
+        <div class="d-flex justify-content-between position-relative">
+          <div class="progress position-absolute top-50 start-0 w-100 translate-middle-y z-0" style="height: 2px;">
+            <div class="progress-bar bg-primary-custom" id="stepProgress" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+          <div class="step-item text-center position-relative z-1 active" data-step="1">
+            <div class="step-circle mx-auto mb-2">1</div>
+            <div class="step-label d-none d-md-block">Servicio</div>
+          </div>
+          <div class="step-item text-center position-relative z-1" data-step="2">
+            <div class="step-circle mx-auto mb-2">2</div>
+            <div class="step-label d-none d-md-block">Fecha</div>
+          </div>
+          <div class="step-item text-center position-relative z-1" data-step="3">
+            <div class="step-circle mx-auto mb-2">3</div>
+            <div class="step-label d-none d-md-block">Horario</div>
+          </div>
+          <div class="step-item text-center position-relative z-1" data-step="4">
+            <div class="step-circle mx-auto mb-2">4</div>
+            <div class="step-label d-none d-md-block">Datos</div>
+          </div>
+        </div>
+      </div>
+
+      <form id="bookingForm" action="/agendar" method="POST" class="fade-in-up bg-white p-4 p-md-5 rounded-4 shadow-sm">
+        
+        <input type="text" name="website" class="d-none" tabindex="-1" autocomplete="off">
+        <input type="hidden" name="servicio_id" id="servicio_id" value="<%= typeof servicio !== 'undefined' ? servicio : '' %>">
+        <input type="hidden" name="fecha" id="fecha_seleccionada">
+        <input type="hidden" name="hora" id="hora_seleccionada">
+
+        <!-- Step 1: Servicio -->
+        <div class="step-content active" id="step1">
+          <h3 class="font-heading mb-4 text-center">Elegí el servicio</h3>
+          <div class="row g-3">
+            <% if (servicios && servicios.length > 0) { %>
+              <% servicios.forEach(serv => { %>
+                <div class="col-md-6">
+                  <div class="service-select-card p-3 rounded-3 border cursor-pointer <%= typeof servicio !== 'undefined' && servicio == serv.id ? 'selected' : '' %>" data-id="<%= serv.id %>" data-name="<%= serv.nombre %>" data-duration="<%= serv.duracion_min %>" data-price="<%= serv.precio %>">
+                    <h5 class="font-heading mb-1"><%= serv.nombre %></h5>
+                    <div class="d-flex justify-content-between text-muted small">
+                      <span><i class="bi bi-clock me-1"></i><%= serv.duracion_min %> min</span>
+                      <span class="fw-bold">$<%= serv.precio.toLocaleString('es-AR') %></span>
+                    </div>
+                  </div>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="col-12 text-center text-muted">No hay servicios disponibles actualmente.</div>
+            <% } %>
+          </div>
+          <div class="d-flex justify-content-end mt-4">
+            <button type="button" class="btn btn-gold text-white rounded-pill px-4 py-2 btn-next" disabled>Siguiente <i class="bi bi-arrow-right ms-2"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 2: Fecha -->
+        <div class="step-content d-none" id="step2">
+          <h3 class="font-heading mb-4 text-center">Elegí la fecha</h3>
+          <div class="calendar-wrapper border rounded-4 p-3 mx-auto" style="max-width: 400px;">
+            <div class="calendar-header d-flex justify-content-between align-items-center mb-3">
+              <button type="button" class="btn btn-sm btn-light rounded-circle" id="prevMonth"><i class="bi bi-chevron-left"></i></button>
+              <h5 class="mb-0 font-heading fw-bold" id="currentMonthYear"></h5>
+              <button type="button" class="btn btn-sm btn-light rounded-circle" id="nextMonth"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="calendar-weekdays d-flex text-center text-muted small mb-2 fw-bold">
+              <div class="w-100">Do</div><div class="w-100">Lu</div><div class="w-100">Ma</div><div class="w-100">Mi</div><div class="w-100">Ju</div><div class="w-100">Vi</div><div class="w-100">Sá</div>
+            </div>
+            <div class="calendar-days d-flex flex-wrap" id="calendarDays">
+              <!-- JS injected -->
+            </div>
+          </div>
+          <div class="d-flex justify-content-between mt-4">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 btn-prev"><i class="bi bi-arrow-left me-2"></i> Anterior</button>
+            <button type="button" class="btn btn-gold text-white rounded-pill px-4 py-2 btn-next" disabled>Siguiente <i class="bi bi-arrow-right ms-2"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 3: Horario -->
+        <div class="step-content d-none" id="step3">
+          <h3 class="font-heading mb-4 text-center">Elegí el horario</h3>
+          <p class="text-center text-muted mb-4">Fecha seleccionada: <strong id="displaySelectedDate"></strong></p>
+          
+          <div id="timeSlotsContainer" class="d-flex flex-wrap gap-2 justify-content-center">
+            <!-- JS injected -->
+            <div class="spinner-border text-primary-custom d-none" role="status" id="timeSpinner">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between mt-5">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 btn-prev"><i class="bi bi-arrow-left me-2"></i> Anterior</button>
+            <button type="button" class="btn btn-gold text-white rounded-pill px-4 py-2 btn-next" disabled>Siguiente <i class="bi bi-arrow-right ms-2"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 4: Datos -->
+        <div class="step-content d-none" id="step4">
+          <h3 class="font-heading mb-4 text-center">Tus Datos</h3>
+          <div class="row gy-4">
+            <div class="col-md-7">
+              <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre completo <span class="text-danger">*</span></label>
+                <input type="text" class="form-control rounded-3 required-field" id="nombre" name="nombre_cliente" required>
+              </div>
+              <div class="mb-3">
+                <label for="telefono" class="form-label">Teléfono <span class="text-danger">*</span></label>
+                <input type="tel" class="form-control rounded-3 required-field" id="telefono" name="telefono" required>
+              </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email (opcional)</label>
+                <input type="email" class="form-control rounded-3" id="email" name="email">
+              </div>
+              <div class="mb-3">
+                <label for="notas" class="form-label">Notas o comentarios (opcional)</label>
+                <textarea class="form-control rounded-3" id="notas" name="notas" rows="3"></textarea>
+              </div>
+            </div>
+            <div class="col-md-5">
+              <div class="summary-card bg-secondary-custom p-4 rounded-4 h-100">
+                <h5 class="font-heading mb-3 border-bottom border-secondary pb-2">Resumen de tu turno</h5>
+                <p class="mb-2 text-muted small">Servicio</p>
+                <p class="fw-bold mb-3" id="summaryService">-</p>
+                
+                <p class="mb-2 text-muted small">Fecha</p>
+                <p class="fw-bold mb-3" id="summaryDate">-</p>
+                
+                <p class="mb-2 text-muted small">Horario</p>
+                <p class="fw-bold mb-0" id="summaryTime">-</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-flex justify-content-between mt-4 align-items-center">
+            <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 btn-prev"><i class="bi bi-arrow-left me-2"></i> Anterior</button>
+            <div class="text-end">
+              <small class="text-danger d-block mb-2" id="requiredMsg">Completá los campos obligatorios (*)</small>
+              <button type="submit" class="btn btn-gold text-white rounded-pill px-5 py-2 fs-5" id="btnSubmitTurno" disabled>Confirmar Turno</button>
+            </div>
+          </div>
+        </div>
+
+      </form>
+      <% } %>
+    </div>
+  </section>
+
+  <!-- Datos del DOM para JS -->
+  <script>
+    window.horarioDomingo = '<%= config.horario_domingo || "Cerrado" %>';
+  </script>
+
+  <%- include('partials/footer') %>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/js/main.js?v=4"></script>
+</body>
+</html>

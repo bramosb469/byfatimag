@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Configuración - Panel de Control</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="d-flex">
+  <%- include('partials/sidebar', {currentPage: 'configuracion'}) %>
+  
+  <main class="main-content flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Configuración del Sitio</h2>
+    </div>
+
+    <% if (typeof msg !== 'undefined' && msg === 'ok') { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Configuración guardada correctamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+    <% if (typeof msg !== 'undefined' && msg === 'cuenta_ok') { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Datos de cuenta actualizados correctamente.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+    <% if (typeof errorMsg !== 'undefined' && errorMsg) { %>
+      <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <%= errorMsg %>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <div class="row">
+      <div class="col-lg-8">
+        <form action="/admin/configuracion" method="POST">
+          <div class="accordion" id="configAccordion">
+            
+            <!-- Info General -->
+            <div class="accordion-item shadow-sm mb-3 border-0">
+              <h2 class="accordion-header">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseInfo">
+                  <i class="bi bi-info-circle me-2 text-primary"></i> Información General
+                </button>
+              </h2>
+              <div id="collapseInfo" class="accordion-collapse collapse show" data-bs-parent="#configAccordion">
+                <div class="accordion-body">
+                  <div class="mb-3">
+                    <label class="form-label">Nombre del Negocio</label>
+                    <input type="text" name="config[nombre_negocio]" class="form-control" value="<%= config.nombre_negocio || '' %>">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Slogan (Bajo el título principal)</label>
+                    <input type="text" name="config[slogan]" class="form-control" value="<%= config.slogan || '' %>">
+                  </div>
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Teléfono Público</label>
+                      <input type="text" name="config[telefono]" class="form-control" value="<%= config.telefono || '' %>">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">WhatsApp (Nro con código de país, ej: 5491123456789)</label>
+                      <input type="text" name="config[whatsapp]" class="form-control" value="<%= config.whatsapp || '' %>">
+                    </div>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Email de Contacto</label>
+                    <input type="email" name="config[email]" class="form-control" value="<%= config.email || '' %>">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Dirección (Ubicación del local)</label>
+                    <input type="text" name="config[direccion]" class="form-control" value="<%= config.direccion || '' %>">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Instagram (Usuario sin @)</label>
+                    <div class="input-group">
+                      <span class="input-group-text">@</span>
+                      <input type="text" name="config[instagram]" class="form-control" value="<%= config.instagram || '' %>">
+                    </div>
+                  </div>
+                  <div class="mb-3 border-top pt-3 mt-3">
+                    <label class="form-label">Texto del Pie de Página (Copyright)</label>
+                    <input type="text" name="config[footer_texto]" class="form-control" value="<%= config.footer_texto || '' %>" placeholder="Ej: © 2024 LU CEJAS. Todos los derechos reservados.">
+                    <div class="form-text">Si lo dejás en blanco, se usará el texto por defecto.</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sobre Nosotras -->
+            <div class="accordion-item shadow-sm mb-3 border-0">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSobre">
+                  <i class="bi bi-person-lines-fill me-2 text-primary"></i> Sección "Sobre Mí / Nosotros"
+                </button>
+              </h2>
+              <div id="collapseSobre" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                <div class="accordion-body">
+                  <div class="mb-3">
+                    <label class="form-label">Título de la sección</label>
+                    <input type="text" name="config[sobre_mi_titulo]" class="form-control" value="<%= config.sobre_mi_titulo || 'Sobre Mí' %>">
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Texto principal</label>
+                    <textarea name="config[sobre_mi_texto]" class="form-control" rows="6"><%= config.sobre_mi_texto || '' %></textarea>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Horarios -->
+            <div class="accordion-item shadow-sm mb-3 border-0">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHorarios">
+                  <i class="bi bi-clock me-2 text-primary"></i> Horarios Regulares
+                </button>
+              </h2>
+              <div id="collapseHorarios" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                <div class="accordion-body">
+                  <p class="text-muted small mb-4">Ejemplo: '09:00 - 18:00' o 'Cerrado'</p>
+                  <div class="row">
+                    <% const dias = ['lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado', 'domingo']; %>
+                    <% dias.forEach(dia => { %>
+                      <div class="col-md-6 mb-3">
+                        <label class="form-label text-capitalize"><%= dia %></label>
+                        <input type="text" name="config[horario_<%= dia %>]" class="form-control" value="<%= config['horario_'+dia] || '' %>">
+                      </div>
+                    <% }) %>
+                  </div>
+                  <hr>
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Duración Estándar de Turno (minutos)</label>
+                    <p class="text-muted small">Esto afecta cómo se divide el tiempo en el calendario si los servicios no tienen duración específica.</p>
+                    <input type="number" name="config[duracion_turno_min]" class="form-control w-25" value="<%= config.duracion_turno_min || 60 %>">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Colores -->
+            <div class="accordion-item shadow-sm mb-4 border-0">
+              <h2 class="accordion-header">
+                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseColores">
+                  <i class="bi bi-palette me-2 text-primary"></i> Diseño y Colores
+                </button>
+              </h2>
+              <div id="collapseColores" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+                <div class="accordion-body">
+                  <div class="row">
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Color Primario (Títulos, Botones)</label>
+                      <div class="d-flex align-items-center gap-2">
+                        <input type="color" class="form-control form-control-color" id="colorPrimaryInput" value="<%= config.color_primario || '#2c1810' %>">
+                        <input type="text" name="config[color_primario]" class="form-control font-monospace" id="colorPrimaryText" value="<%= config.color_primario || '#2c1810' %>">
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Color Acento (Destacados, Iconos)</label>
+                      <div class="d-flex align-items-center gap-2">
+                        <input type="color" class="form-control form-control-color" id="colorAccentInput" value="<%= config.color_acento || '#c5a059' %>">
+                        <input type="text" name="config[color_acento]" class="form-control font-monospace" id="colorAccentText" value="<%= config.color_acento || '#c5a059' %>">
+                      </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                      <label class="form-label">Color de Fondo General</label>
+                      <div class="d-flex align-items-center gap-2">
+                        <input type="color" class="form-control form-control-color" id="colorBgInput" value="<%= config.color_fondo || '#fdfbf7' %>">
+                        <input type="text" name="config[color_fondo]" class="form-control font-monospace" id="colorBgText" value="<%= config.color_fondo || '#fdfbf7' %>">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mt-3 p-3 border rounded" id="colorPreview" style="background-color: <%= config.color_fondo || '#fdfbf7' %>;">
+                    <h5 style="color: <%= config.color_primario || '#2c1810' %>;">Previsualización de Colores</h5>
+                    <button type="button" class="btn" style="background-color: <%= config.color_acento || '#c5a059' %>; color: white;">Botón de Ejemplo</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Correo -->
+          <div class="accordion-item shadow-sm mb-4 border-0">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCorreo">
+                <i class="bi bi-envelope-at me-2 text-primary"></i> Configuración de Correo Electrónico (Confirmación)
+              </button>
+            </h2>
+            <div id="collapseCorreo" class="accordion-collapse collapse" data-bs-parent="#configAccordion">
+              <div class="accordion-body">
+                <p class="text-muted small">Configurá el servidor SMTP para enviar confirmaciones automáticas de reserva a tus clientes.</p>
+                <div class="row">
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Servidor SMTP (Ej: smtp.gmail.com)</label>
+                    <input type="text" name="config[email_host]" class="form-control" value="<%= config.email_host || '' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Puerto (Ej: 465 o 587)</label>
+                    <input type="number" name="config[email_port]" class="form-control" value="<%= config.email_port || '587' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Usuario / Correo Remitente</label>
+                    <input type="email" name="config[email_user]" class="form-control" value="<%= config.email_user || '' %>">
+                  </div>
+                  <div class="col-md-6 mb-3">
+                    <label class="form-label">Contraseña (o Contraseña de App)</label>
+                    <input type="password" name="config[email_pass]" class="form-control" value="<%= config.email_pass || '' %>">
+                  </div>
+                </div>
+                <hr>
+                <div class="mb-3">
+                  <label class="form-label">Mensaje de Agradecimiento (Email)</label>
+                  <textarea name="config[email_mensaje_agradecimiento]" class="form-control" rows="4"><%= config.email_mensaje_agradecimiento |||| \¡Gracias por elegir \! Te esperamos.\ %></textarea>
+                  <small class="text-muted">Este texto se incluirá en el correo que recibe el cliente al reservar.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg"><i class="bi bi-save me-2"></i> Guardar Cambios de Configuración</button>
+          </div>
+        </form>
+
+        <!-- Configuración de Cuenta -->
+        <div class="card shadow-sm border-0 mt-5 mb-4">
+          <div class="card-header bg-dark text-white">
+            <h5 class="mb-0"><i class="bi bi-person-lock me-2"></i> Cuenta de Administrador</h5>
+          </div>
+          <div class="card-body">
+            <form action="/admin/cuenta" method="POST">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Nombre</label>
+                  <input type="text" name="nombre" class="form-control" value="<%= typeof adminUser !== 'undefined' && adminUser ? adminUser.nombre : '' %>" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Email (Usuario)</label>
+                  <input type="email" name="email" class="form-control" value="<%= typeof adminUser !== 'undefined' && adminUser ? adminUser.email : '' %>" required>
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Nueva Contraseña</label>
+                  <input type="password" name="password" class="form-control" placeholder="Dejar en blanco para no cambiar">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label class="form-label">Confirmar Nueva Contraseña</label>
+                  <input type="password" name="password_confirm" class="form-control" placeholder="Dejar en blanco para no cambiar">
+                </div>
+              </div>
+              <button type="submit" class="btn btn-dark"><i class="bi bi-shield-check me-2"></i> Actualizar Credenciales</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fechas Bloqueadas (Sidebar-ish) -->
+      <div class="col-lg-4 mt-4 mt-lg-0">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="bi bi-calendar-x"></i> Fechas Bloqueadas</h5>
+          </div>
+          <div class="card-body">
+            <p class="small text-muted mb-3">Agrega fechas donde el local estará cerrado (Feriados, vacaciones, etc.) para que no se puedan agendar turnos.</p>
+            
+            <form action="/admin/horarios-bloqueados/nuevo" method="POST" class="mb-4 bg-light p-3 rounded">
+              <div class="mb-2">
+                <label class="form-label small fw-bold">Fecha</label>
+                <input type="date" name="fecha" class="form-control form-control-sm" required>
+              </div>
+              <div class="mb-2">
+                <label class="form-label small fw-bold">Motivo (Opcional)</label>
+                <input type="text" name="motivo" class="form-control form-control-sm" placeholder="Ej: Feriado Nacional">
+              </div>
+              <button type="submit" class="btn btn-sm btn-dark w-100 mt-2">Bloquear Fecha</button>
+            </form>
+
+            <ul class="list-group list-group-flush">
+              <% if (blockedDates && blockedDates.length > 0) { %>
+                <% blockedDates.forEach(hb => { %>
+                  <li class="list-group-item d-flex justify-content-between align-items-center px-0">
+                    <div>
+                      <div class="fw-bold text-danger"><%= hb.fecha %></div>
+                      <small class="text-muted"><%= hb.motivo || 'Sin motivo' %></small>
+                    </div>
+                    <form action="/admin/horarios-bloqueados/<%= hb.id %>/delete" method="POST" class="form-delete">
+                      <button type="submit" class="btn btn-sm btn-outline-danger border-0"><i class="bi bi-trash"></i></button>
+                    </form>
+                  </li>
+                <% }) %>
+              <% } else { %>
+                <li class="list-group-item px-0 text-muted small text-center">No hay fechas bloqueadas.</li>
+              <% } %>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

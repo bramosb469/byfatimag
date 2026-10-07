@@ -1,0 +1,148 @@
+:root {
+  --primary-color: #2c1810;
+  --accent-color: #c5a059;
+  --bg-color: #fdfbf7;
+  --sidebar-width: 250px;
+}
+
+body {
+  background-color: var(--bg-color);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', serif;
+}
+
+/* Sidebar */
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--primary-color);
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+}
+
+.bg-accent {
+  background-color: var(--accent-color) !important;
+}
+
+.nav-link:hover:not(.active) {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Main Content */
+.main-content {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+}
+
+/* Buttons */
+.btn-gold {
+  background-color: var(--accent-color);
+  color: white;
+  border: none;
+}
+
+.btn-gold:hover {
+  background-color: #b08d4a;
+  color: white;
+}
+
+.btn-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+/* Cards & Stats */
+.stat-card {
+  border-radius: 12px;
+  transition: transform 0.2s;
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+}
+.stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+/* Tables */
+.table th {
+  font-weight: 600;
+  color: #6c757d;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+}
+
+.cursor-move {
+  cursor: move;
+}
+
+/* Galeria */
+.galeria-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+.galeria-card img {
+  transition: transform 0.3s;
+}
+.galeria-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Modals */
+.modal-content {
+  border: none;
+  border-radius: 16px;
+}
+.modal-header {
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+.modal-footer {
+  border-top: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Accordion Config */
+.accordion-item {
+  border-radius: 12px !important;
+  overflow: hidden;
+}
+.accordion-button:not(.collapsed) {
+  background-color: rgba(197, 160, 89, 0.1);
+  color: var(--primary-color);
+  box-shadow: none;
+}
+.accordion-button:focus {
+  box-shadow: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    transform: translateX(-100%);
+  }
+  .sidebar.show {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+    padding-top: 60px !important;
+  }
+}

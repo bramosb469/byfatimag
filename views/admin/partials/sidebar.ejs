@@ -1,0 +1,62 @@
+<nav id="sidebar" class="sidebar d-flex flex-column p-3 text-white">
+  <a href="/admin" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+    <span class="fs-4 fw-bold text-truncate"><%= locals.config && locals.config.nombre_negocio ? locals.config.nombre_negocio : 'Panel' %> Admin</span>
+  </a>
+  <hr>
+  <ul class="nav nav-pills flex-column mb-auto">
+    <li class="nav-item">
+      <a href="/admin" class="nav-link text-white <%= locals.currentPage === 'dashboard' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-speedometer2 me-2"></i>
+        Dashboard
+      </a>
+    </li>
+    <li>
+      <a href="/admin/calendario" class="nav-link text-white <%= locals.currentPage === 'calendario' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-calendar-range me-2"></i>
+        Calendario
+      </a>
+    </li>
+    <li>
+      <a href="/admin/turnos" class="nav-link text-white <%= locals.currentPage === 'turnos' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-list-check me-2"></i>
+        Lista de Turnos
+      </a>
+    </li>
+    <li>
+      <a href="/admin/galeria" class="nav-link text-white <%= locals.currentPage === 'galeria' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-images me-2"></i>
+        Galería
+      </a>
+    </li>
+    <li>
+      <a href="/admin/servicios" class="nav-link text-white <%= locals.currentPage === 'servicios' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-scissors me-2"></i>
+        Servicios
+      </a>
+    </li>
+    <li>
+      <a href="/admin/testimonios" class="nav-link text-white <%= locals.currentPage === 'testimonios' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-chat-quote me-2"></i>
+        Testimonios
+      </a>
+    </li>
+    <li>
+      <a href="/admin/configuracion" class="nav-link text-white <%= locals.currentPage === 'configuracion' ? 'active bg-accent' : '' %>">
+        <i class="bi bi-gear me-2"></i>
+        Configuración
+      </a>
+    </li>
+  </ul>
+  <hr>
+  <div class="dropdown">
+    <a href="/admin/logout" class="d-flex align-items-center text-white text-decoration-none bg-danger p-2 rounded justify-content-center">
+      <i class="bi bi-box-arrow-right me-2"></i>
+      <strong>Cerrar Sesión</strong>
+    </a>
+  </div>
+</nav>
+
+<!-- Toggle button for mobile -->
+<button class="btn btn-dark d-md-none position-fixed top-0 start-0 m-3 z-3" id="sidebarToggle">
+  <i class="bi bi-list fs-4"></i>
+</button>

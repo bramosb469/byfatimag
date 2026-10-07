@@ -1,0 +1,31 @@
+<style>
+  :root {
+    --color-primary: <%= config.color_primario || '#C9A96E' %>;
+    --color-bg: <%= config.color_fondo || '#FAF7F2' %>;
+    --color-text: <%= config.color_texto || '#2C1810' %>;
+    --color-accent: <%= config.color_acento || '#8B6914' %>;
+    --color-secondary: <%= config.color_secundario || '#F5EDE0' %>;
+  }
+</style>
+<nav class="navbar navbar-expand-lg fixed-top" id="mainNav">
+  <div class="container">
+    <a class="navbar-brand font-heading text-uppercase brand-name" href="/"><%= config.nombre_negocio || 'LU CEJAS' %></a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+      <i class="bi bi-list fs-1 text-primary-custom"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarResponsive">
+      <ul class="navbar-nav ms-auto my-2 my-lg-0 align-items-center">
+        <li class="nav-item"><a class="nav-link" href="/">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" href="/servicios">Servicios</a></li>
+        <li class="nav-item"><a class="nav-link" href="/galeria">Galería</a></li>
+        <li class="nav-item ms-lg-3"><a class="nav-link btn-gold text-white px-4 rounded-pill" href="/agendar">Agendar</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<% if (config.whatsapp) { %>
+<a href="https://wa.me/<%= config.whatsapp.replace(/\D/g,'') %>" class="whatsapp-btn" target="_blank" rel="noopener noreferrer">
+  <i class="bi bi-whatsapp"></i>
+</a>
+<% } %>

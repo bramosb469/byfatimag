@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Galería - Panel de Control</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="d-flex">
+  <%- include('partials/sidebar', {currentPage: 'galeria'}) %>
+  
+  <main class="main-content flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Gestión de Galería</h2>
+      <button class="btn btn-gold text-white" data-bs-toggle="modal" data-bs-target="#subirGaleriaModal">
+        <i class="bi bi-cloud-upload"></i> Subir Nuevo
+      </button>
+    </div>
+
+    <% if (typeof msg !== 'undefined' && msg === 'ok') { %>
+      <div class="alert alert-success alert-dismissible fade show" role="alert">
+        Operación realizada con éxito.
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    <% } %>
+
+    <!-- Grid de Galería -->
+    <div class="row g-4">
+      <% if (items && items.length > 0) { %>
+        <% items.forEach(item => { %>
+          <div class="col-md-6 col-lg-4 col-xl-3">
+            <div class="card h-100 shadow-sm border-0 galeria-card">
+              <div class="position-relative bg-light card-img-top d-flex align-items-center justify-content-center overflow-hidden" style="height: 200px;">
+                <% if (item.tipo === 'video') { %>
+                  <i class="bi bi-play-circle-fill display-1 text-secondary opacity-50 position-absolute"></i>
+                <% } else { %>
+                  <img src="<%= item.url %>" alt="<%= item.titulo %>" class="img-fluid w-100 h-100" style="object-fit: cover;">
+                <% } %>
+                <div class="position-absolute top-0 end-0 p-2 d-flex gap-1">
+                  <span class="badge bg-dark opacity-75"><i class="bi bi-<%= item.tipo === 'video' ? 'camera-video' : 'camera' %>"></i> <%= item.tipo %></span>
+                </div>
+                <div class="position-absolute top-0 start-0 p-2">
+                  <form action="/admin/galeria/<%= item.id %>/toggle-destacado" method="POST" class="d-inline">
+                    <button type="submit" class="btn btn-sm btn-circle <%= item.destacado ? 'btn-warning' : 'btn-light' %> shadow-sm" title="Destacar">
+                      <i class="bi bi-star<%= item.destacado ? '-fill' : '' %>"></i>
+                    </button>
+                  </form>
+                </div>
+              </div>
+              <div class="card-body">
+                <h5 class="card-title text-truncate fs-6"><%= item.titulo || 'Sin título' %></h5>
+                <p class="card-text small text-muted text-truncate mb-2"><i class="bi bi-scissors"></i> <%= item.servicio_nombre || 'General' %></p>
+                <div class="d-flex justify-content-between mt-3">
+                  <button class="btn btn-sm btn-outline-primary w-100 me-2" data-bs-toggle="modal" data-bs-target="#editModal<%= item.id %>"><i class="bi bi-pencil"></i> Editar</button>
+                  <form action="/admin/galeria/<%= item.id %>/delete" method="POST" class="form-delete">
+                    <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Editar -->
+          <div class="modal fade" id="editModal<%= item.id %>" tabindex="-1">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title">Editar Item</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/admin/galeria/<%= item.id %>/editar" method="POST">
+                  <div class="modal-body">
+                    <div class="mb-3">
+                      <label class="form-label">Título</label>
+                      <input type="text" name="titulo" class="form-control" value="<%= item.titulo %>">
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Descripción</label>
+                      <textarea name="descripcion" class="form-control" rows="2"><%= item.descripcion %></textarea>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label">Servicio Relacionado</label>
+                      <select name="servicio_id" class="form-select">
+                        <option value="">Ninguno / General</option>
+                        <% if (servicios) { servicios.forEach(s => { %>
+                          <option value="<%= s.id %>" <%= item.servicio_id == s.id ? 'selected' : '' %>><%= s.nombre %></option>
+                        <% }) } %>
+                      </select>
+                    </div>
+                    <div class="form-check mb-3">
+                      <input class="form-check-input" type="checkbox" name="destacado" id="destacado<%= item.id %>" <%= item.destacado ? 'checked' : '' %>>
+                      <label class="form-check-label" for="destacado<%= item.id %>">
+                        Mostrar en sección destacados
+                      </label>
+                    </div>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        <% }) %>
+      <% } else { %>
+        <div class="col-12 text-center py-5 text-muted">
+          <i class="bi bi-images display-4 d-block mb-3"></i>
+          <p>No hay elementos en la galería. ¡Sube algunas fotos para empezar!</p>
+        </div>
+      <% } %>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Subir -->
+<div class="modal fade" id="subirGaleriaModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Subir a Galería</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form action="/admin/galeria/upload" method="POST" enctype="multipart/form-data">
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Tipo de archivo</label>
+            <div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="tipo" id="tipoFoto" value="foto" checked>
+                <label class="form-check-label" for="tipoFoto">Foto</label>
+              </div>
+              <div class="form-check form-check-inline">
+                <input class="form-check-input" type="radio" name="tipo" id="tipoVideo" value="video">
+                <label class="form-check-label" for="tipoVideo">Video</label>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Archivo Principal *</label>
+            <input type="file" name="archivo" class="form-control" accept="image/*,video/*" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Archivo 'Antes' (Opcional - Para comparativas)</label>
+            <input type="file" name="archivo_antes" class="form-control" accept="image/*">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" name="titulo" class="form-control">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" class="form-control" rows="2"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Servicio Relacionado</label>
+            <select name="servicio_id" class="form-select">
+              <option value="">Ninguno / General</option>
+              <% if (servicios) { servicios.forEach(s => { %>
+                <option value="<%= s.id %>"><%= s.nombre %></option>
+              <% }) } %>
+            </select>
+          </div>
+          <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" name="destacado" id="destacadoNew">
+            <label class="form-check-label" for="destacadoNew">
+              Destacar en la página de inicio
+            </label>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Subir Archivo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

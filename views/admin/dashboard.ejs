@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - Panel de Control</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/admin.css">
+</head>
+<body>
+<div class="d-flex">
+  <%- include('partials/sidebar', {currentPage: 'dashboard'}) %>
+  
+  <main class="main-content flex-grow-1 p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>Dashboard</h2>
+    </div>
+
+    <!-- Stat Cards -->
+    <div class="row mb-4">
+      <div class="col-md-4 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon bg-primary text-white me-3">
+              <i class="bi bi-calendar-week"></i>
+            </div>
+            <div>
+              <h6 class="card-subtitle text-muted mb-1">Turnos esta semana</h6>
+              <h3 class="card-title mb-0"><%= stats.semana || 0 %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon bg-warning text-dark me-3">
+              <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div>
+              <h6 class="card-subtitle text-muted mb-1">Pendientes de confirmar</h6>
+              <h3 class="card-title mb-0">
+                <%= stats.pendientes || 0 %>
+                <% if (stats.pendientes > 0) { %>
+                  <span class="badge bg-danger ms-2 fs-6 px-2 rounded-pill"><%= stats.pendientes %></span>
+                <% } %>
+              </h3>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-4 mb-3">
+        <div class="card stat-card shadow-sm border-0 h-100">
+          <div class="card-body d-flex align-items-center">
+            <div class="stat-icon bg-success text-white me-3">
+              <i class="bi bi-calendar-month"></i>
+            </div>
+            <div>
+              <h6 class="card-subtitle text-muted mb-1">Turnos este mes</h6>
+              <h3 class="card-title mb-0"><%= stats.mes || 0 %></h3>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row">
+      <!-- Turnos de Hoy -->
+      <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="mb-0">Turnos de Hoy</h5>
+          </div>
+          <div class="card-body">
+            <% if (turnosHoy && turnosHoy.length > 0) { %>
+              <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Hora</th>
+                      <th>Cliente</th>
+                      <th>Teléfono</th>
+                      <th>Servicio</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% turnosHoy.forEach(t => { %>
+                      <tr>
+                        <td class="fw-bold"><%= t.hora %></td>
+                        <td><%= t.nombre_cliente %></td>
+                        <td><a href="https://wa.me/<%= t.telefono.replace(/[^0-9]/g, '') %>" target="_blank" class="text-decoration-none text-success"><i class="bi bi-whatsapp"></i> <%= t.telefono %></a></td>
+                        <td><%= t.servicio_nombre %></td>
+                        <td>
+                          <% if (t.estado === 'pendiente') { %><span class="badge bg-warning text-dark">Pendiente</span>
+                          <% } else if (t.estado === 'confirmado') { %><span class="badge bg-info text-dark">Confirmado</span>
+                          <% } else if (t.estado === 'completado') { %><span class="badge bg-success">Completado</span>
+                          <% } else if (t.estado === 'cancelado') { %><span class="badge bg-danger">Cancelado</span>
+                          <% } else { %><span class="badge bg-secondary"><%= t.estado %></span><% } %>
+                        </td>
+                        <td>
+                          <div class="d-flex gap-1">
+                            <% if (t.estado !== 'confirmado' && t.estado !== 'completado' && t.estado !== 'cancelado') { %>
+                            <form action="/admin/turnos/<%= t.id %>/estado" method="POST" class="d-inline">
+                              <input type="hidden" name="estado" value="confirmado">
+                              <button type="submit" class="btn btn-sm btn-outline-info" title="Confirmar"><i class="bi bi-check-lg"></i></button>
+                            </form>
+                            <% } %>
+                            <% if (t.estado !== 'completado' && t.estado !== 'cancelado') { %>
+                            <form action="/admin/turnos/<%= t.id %>/estado" method="POST" class="d-inline">
+                              <input type="hidden" name="estado" value="completado">
+                              <button type="submit" class="btn btn-sm btn-outline-success" title="Completar"><i class="bi bi-check-all"></i></button>
+                            </form>
+                            <% } %>
+                            <% if (t.estado !== 'cancelado' && t.estado !== 'completado') { %>
+                            <form action="/admin/turnos/<%= t.id %>/estado" method="POST" class="d-inline">
+                              <input type="hidden" name="estado" value="cancelado">
+                              <button type="submit" class="btn btn-sm btn-outline-danger" title="Cancelar"><i class="bi bi-x-lg"></i></button>
+                            </form>
+                            <% } %>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+            <% } else { %>
+              <div class="alert alert-light text-center border">
+                <i class="bi bi-emoji-smile fs-4 d-block mb-2 text-muted"></i>
+                No hay turnos agendados para hoy.
+              </div>
+            <% } %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Próximos Turnos -->
+      <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm border-0">
+          <div class="card-header bg-white border-0 pt-4 pb-0">
+            <h5 class="mb-0">Próximos Turnos</h5>
+          </div>
+          <div class="card-body p-0 mt-3">
+            <% if (proximosTurnos && proximosTurnos.length > 0) { %>
+              <div class="list-group list-group-flush rounded-bottom">
+                <% proximosTurnos.forEach(t => { %>
+                  <div class="list-group-item d-flex justify-content-between align-items-start py-3">
+                    <div class="ms-2 me-auto">
+                      <div class="fw-bold"><%= t.nombre_cliente %></div>
+                      <small class="text-muted d-block"><i class="bi bi-scissors"></i> <%= t.servicio_nombre %></small>
+                      <small class="text-muted"><i class="bi bi-calendar-event"></i> <%= t.fecha %> - <%= t.hora %></small>
+                    </div>
+                    <% if (t.estado === 'pendiente') { %><span class="badge bg-warning rounded-pill mt-1">P</span>
+                    <% } else if (t.estado === 'confirmado') { %><span class="badge bg-info rounded-pill mt-1">C</span>
+                    <% } %>
+                  </div>
+                <% }) %>
+              </div>
+            <% } else { %>
+              <p class="text-center text-muted p-3 mb-0">No hay turnos próximos.</p>
+            <% } %>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>
