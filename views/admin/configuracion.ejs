@@ -218,7 +218,7 @@
                 <hr>
                 <div class="mb-3">
                   <label class="form-label">Mensaje de Agradecimiento (Email)</label>
-                  <textarea name="config[email_mensaje_agradecimiento]" class="form-control" rows="4"><%= config.email_mensaje_agradecimiento |||| \¡Gracias por elegir \! Te esperamos.\ %></textarea>
+                  <textarea name="config[email_mensaje_agradecimiento]" class="form-control" rows="4"><%= config.email_mensaje_agradecimiento || '¡Gracias por elegirnos! Te esperamos.' %></textarea>
                   <small class="text-muted">Este texto se incluirá en el correo que recibe el cliente al reservar.</small>
                 </div>
               </div>
