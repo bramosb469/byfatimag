@@ -54,6 +54,20 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+// Lazy DB init (works both locally and in serverless)
+let dbReady = null;
+function ensureDb() {
+  if (!dbReady) {
+    dbReady = initDatabase().then(() => {
+      seedAdmin(process.env.ADMIN_EMAIL || 'admin@lucejas.com', process.env.ADMIN_PASSWORD || 'admin123');
+    });
+  }
+  return dbReady;
+}
+app.use((req, res, next) => {
+  ensureDb().then(() => next()).catch(next);
+});
+
 // Config Middleware
 app.use((req, res, next) => {
   try {
@@ -75,16 +89,13 @@ const adminRoutes = require('./routes/admin');
 app.use('/', publicRoutes);
 app.use('/admin', adminRoutes);
 
-// Initialize database then start server
+// Initialize database then start server (local only)
 async function start() {
   try {
-    await initDatabase();
-    console.log('Base de datos inicializada correctamente.');
+    await ensureDb();
 
-    // Seed admin
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@lucejas.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-    seedAdmin(adminEmail, adminPassword);
 
     app.listen(PORT, () => {
       console.log(`\n  ✨ LU CEJAS servidor corriendo en http://localhost:${PORT}`);
@@ -98,4 +109,8 @@ async function start() {
   }
 }
 
-start();
+if (isVercel) {
+  module.exports = app;
+} else {
+  start();
+}

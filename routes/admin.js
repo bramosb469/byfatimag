@@ -8,11 +8,17 @@ const { getDb } = require('../database/init');
 const { requireAuth } = require('../middleware/auth');
 
 // Ensure upload directories exist
-const uploadsBase = path.join(__dirname, '..', 'public', 'uploads');
+const uploadsBase = process.env.VERCEL === '1'
+  ? path.join('/tmp', 'public', 'uploads')
+  : path.join(__dirname, '..', 'public', 'uploads');
 const galeriaDir = path.join(uploadsBase, 'galeria');
 const serviciosDir = path.join(uploadsBase, 'servicios');
 [uploadsBase, galeriaDir, serviciosDir].forEach(dir => {
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  try {
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+  } catch (e) {
+    console.error('No se pudo crear', dir, e.message);
+  }
 });
 
 // Multer config
