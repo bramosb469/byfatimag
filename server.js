@@ -1,7 +1,6 @@
 require('dotenv').config();
 const express = require('express');
-const session = require('express-session');
-const MemoryStore = require('memorystore')(session);
+const cookieSession = require('cookie-session');
 const helmet = require('helmet');
 const compression = require('compression');
 const path = require('path');
@@ -39,15 +38,15 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Session with MemoryStore (no native deps needed)
-app.use(session({
-  store: new MemoryStore({
-    checkPeriod: 86400000 // prune expired entries every 24h
-  }),
-  secret: process.env.SESSION_SECRET || 'secret',
-  resave: false,
-  saveUninitialized: false,
-  cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 } // 1 week
+// Session stored in a signed cookie (works in serverless, no server state)
+app.set('trust proxy', 1);
+app.use(cookieSession({
+  name: 'lucejas_session',
+  keys: [process.env.SESSION_SECRET || 'secret'],
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
+  httpOnly: true,
+  sameSite: 'lax',
+  secure: isVercel
 }));
 
 // EJS
