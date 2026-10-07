@@ -11,9 +11,9 @@ const { initDatabase, getAllConfig, seedAdmin } = require('./database/init');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Directories
-const publicUploads = path.join(__dirname, 'public', 'uploads');
-const dataDir = path.join(__dirname, 'data');
+const isVercel = process.env.VERCEL === '1';
+const publicUploads = isVercel ? path.join('/tmp', 'public', 'uploads') : path.join(__dirname, 'public', 'uploads');
+const dataDir = isVercel ? path.join('/tmp', 'data') : path.join(__dirname, 'data');
 if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 if (!fs.existsSync(publicUploads)) fs.mkdirSync(publicUploads, { recursive: true });
 if (!fs.existsSync(path.join(publicUploads, 'galeria'))) fs.mkdirSync(path.join(publicUploads, 'galeria'), { recursive: true });
