@@ -97,7 +97,8 @@ router.get('/agendar/comprobante/:id', async (req, res) => {
     const pdfData = Buffer.concat(buffers);
     res.setHeader('Content-Length', Buffer.byteLength(pdfData));
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-disposition', `attachment; filename="Turno-LuCejas-${turno.id}.pdf"`);
+    const nombreNegocioLimpio = (config.nombre_negocio || 'LuCejas').replace(/[^a-zA-Z0-9]/g, '');
+    res.setHeader('Content-disposition', `attachment; filename="Turno-${nombreNegocioLimpio}-${turno.id}.pdf"`);
     res.send(pdfData);
   } catch (error) {
     console.error('PDF Error:', error);
