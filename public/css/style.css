@@ -110,7 +110,7 @@ body {
 .page-hero {
   height: 40vh;
   background: linear-gradient(135deg, var(--color-text) 0%, var(--color-accent) 100%);
-  margin-top: 76px; /* Offset for navbar */
+  padding-top: 76px; /* Offset for navbar inside the hero */
 }
 
 /* Titles */
