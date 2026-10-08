@@ -69,12 +69,12 @@ body {
   letter-spacing: 1px;
 }
 .navbar.navbar-scrolled {
-  background-color: var(--color-bg);
+  background-color: var(--color-bg) !important;
   padding: 0.8rem 0;
   box-shadow: 0 2px 15px rgba(0,0,0,0.05);
 }
 .navbar.navbar-scrolled .nav-link {
-  color: var(--color-text);
+  color: var(--color-text) !important;
 }
 .navbar.navbar-scrolled .navbar-brand {
   color: var(--color-text) !important;
