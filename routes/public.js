@@ -43,61 +43,66 @@ router.get('/agendar', async (req, res) => {
 });
 
 router.get('/agendar/comprobante/:id', async (req, res) => {
-  const db = getDb();
-  const turno = await db.prepare(`
-    SELECT t.*, s.nombre as servicio_nombre 
-    FROM turnos t 
-    LEFT JOIN servicios s ON t.servicio_id = s.id 
-    WHERE t.id = ?
-  `).get(req.params.id);
+  try {
+    const db = getDb();
+    const turno = await db.prepare(`
+      SELECT t.*, s.nombre as servicio_nombre 
+      FROM turnos t 
+      LEFT JOIN servicios s ON t.servicio_id = s.id 
+      WHERE t.id = ?
+    `).get(req.params.id);
 
-  if (!turno) {
-    return res.status(404).send('Turno no encontrado');
+    if (!turno) {
+      return res.status(404).send('Turno no encontrado');
+    }
+
+    const config = await getAllConfig();
+    const fParts = turno.fecha.split('-');
+    const fStr = fParts[2] + '/' + fParts[1] + '/' + fParts[0];
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    const buffers = [];
+    
+    await new Promise((resolve, reject) => {
+      doc.on('data', buffers.push.bind(buffers));
+      doc.on('end', resolve);
+      doc.on('error', reject);
+      
+      // PDF Content
+      doc.rect(0, 0, doc.page.width, 120).fill(config.color_primario || '#C9A96E');
+      doc.fontSize(24).fillColor('#ffffff').text(config.nombre_negocio || 'LU CEJAS', 50, 40, { align: 'center' });
+      doc.fontSize(12).fillColor('#ffffff').text('COMPROBANTE DE TURNO', 50, 75, { align: 'center' });
+      doc.moveDown(4);
+      
+      doc.fontSize(16).fillColor('#333333').text('Detalles de la Reserva:', { underline: true });
+      doc.moveDown(1);
+      
+      doc.fontSize(14).fillColor('#555555');
+      doc.text(`Cliente: `, { continued: true }).fillColor('#000000').text(turno.nombre_cliente);
+      doc.moveDown(0.5);
+      doc.fillColor('#555555').text(`Servicio: `, { continued: true }).fillColor('#000000').text(turno.servicio_nombre || '-');
+      doc.moveDown(0.5);
+      doc.fillColor('#555555').text(`Fecha: `, { continued: true }).fillColor('#000000').text(fStr);
+      doc.moveDown(0.5);
+      doc.fillColor('#555555').text(`Hora: `, { continued: true }).fillColor('#000000').text(`${turno.hora} hs`);
+      doc.moveDown(0.5);
+      doc.fillColor('#555555').text(`Dirección: `, { continued: true }).fillColor('#000000').text(config.direccion || '-');
+      
+      doc.moveDown(3);
+      doc.fontSize(12).fillColor('#888888').text(config.email_mensaje_agradecimiento || `¡Gracias por elegir ${config.nombre_negocio || 'nosotros'}! Te esperamos.`, { align: 'center' });
+      
+      doc.end();
+    });
+
+    const pdfData = Buffer.concat(buffers);
+    res.setHeader('Content-Length', Buffer.byteLength(pdfData));
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-disposition', `attachment; filename="Turno-LuCejas-${turno.id}.pdf"`);
+    res.send(pdfData);
+  } catch (error) {
+    console.error('PDF Error:', error);
+    res.status(500).send('Error generando PDF: ' + (error.message || error.toString()));
   }
-
-  const config = await getAllConfig();
-  const fParts = turno.fecha.split('-');
-  const fStr = fParts[2] + '/' + fParts[1] + '/' + fParts[0];
-
-  const doc = new PDFDocument({ size: 'A4', margin: 50 });
-  const buffers = [];
-  
-  await new Promise((resolve, reject) => {
-    doc.on('data', buffers.push.bind(buffers));
-    doc.on('end', resolve);
-    doc.on('error', reject);
-    
-    // PDF Content
-    doc.rect(0, 0, doc.page.width, 120).fill(config.color_primario || '#C9A96E');
-    doc.fontSize(24).fillColor('#ffffff').text(config.nombre_negocio || 'LU CEJAS', 50, 40, { align: 'center' });
-    doc.fontSize(12).fillColor('#ffffff').text('COMPROBANTE DE TURNO', 50, 75, { align: 'center' });
-    doc.moveDown(4);
-    
-    doc.fontSize(16).fillColor('#333333').text('Detalles de la Reserva:', { underline: true });
-    doc.moveDown(1);
-    
-    doc.fontSize(14).fillColor('#555555');
-    doc.text(`Cliente: `, { continued: true }).fillColor('#000000').text(turno.nombre_cliente);
-    doc.moveDown(0.5);
-    doc.fillColor('#555555').text(`Servicio: `, { continued: true }).fillColor('#000000').text(turno.servicio_nombre || '-');
-    doc.moveDown(0.5);
-    doc.fillColor('#555555').text(`Fecha: `, { continued: true }).fillColor('#000000').text(fStr);
-    doc.moveDown(0.5);
-    doc.fillColor('#555555').text(`Hora: `, { continued: true }).fillColor('#000000').text(`${turno.hora} hs`);
-    doc.moveDown(0.5);
-    doc.fillColor('#555555').text(`Dirección: `, { continued: true }).fillColor('#000000').text(config.direccion || '-');
-    
-    doc.moveDown(3);
-    doc.fontSize(12).fillColor('#888888').text(config.email_mensaje_agradecimiento || `¡Gracias por elegir ${config.nombre_negocio || 'nosotros'}! Te esperamos.`, { align: 'center' });
-    
-    doc.end();
-  });
-
-  const pdfData = Buffer.concat(buffers);
-  res.setHeader('Content-Length', Buffer.byteLength(pdfData));
-  res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-disposition', `attachment; filename="Turno-LuCejas-${turno.id}.pdf"`);
-  res.send(pdfData);
 });
 
 router.post('/agendar', async (req, res) => {
