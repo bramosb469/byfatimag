@@ -28,6 +28,20 @@
       font-family: 'Cormorant Garamond', serif;
       font-weight: 600;
     }
+    
+    /* Fix para iconos de flechas del calendario */
+    .fc-icon {
+      font-family: "bootstrap-icons" !important;
+      display: inline-block;
+      font-style: normal;
+      font-variant: normal;
+      text-transform: none;
+      line-height: 1;
+    }
+    .fc-icon-chevron-left::before { content: "\f284"; }
+    .fc-icon-chevron-right::before { content: "\f285"; }
+    .fc-icon-chevron-left-double::before { content: "\f282"; }
+    .fc-icon-chevron-right-double::before { content: "\f283"; }
   </style>
 </head>
 <body>
