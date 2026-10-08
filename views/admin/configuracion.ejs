@@ -287,11 +287,24 @@
                 <label class="form-label small fw-bold">Fecha</label>
                 <input type="date" name="fecha" class="form-control form-control-sm" required>
               </div>
+              <div class="row">
+                <div class="col-6 mb-2">
+                  <label class="form-label small fw-bold">Hora Inicio (Opcional)</label>
+                  <input type="time" name="hora_inicio" class="form-control form-control-sm">
+                </div>
+                <div class="col-6 mb-2">
+                  <label class="form-label small fw-bold">Hora Fin (Opcional)</label>
+                  <input type="time" name="hora_fin" class="form-control form-control-sm">
+                </div>
+              </div>
+              <div class="mb-2 text-muted" style="font-size: 0.75rem;">
+                Si dejás las horas en blanco, se bloquea todo el día.
+              </div>
               <div class="mb-2">
                 <label class="form-label small fw-bold">Motivo (Opcional)</label>
                 <input type="text" name="motivo" class="form-control form-control-sm" placeholder="Ej: Feriado Nacional">
               </div>
-              <button type="submit" class="btn btn-sm btn-dark w-100 mt-2">Bloquear Fecha</button>
+              <button type="submit" class="btn btn-sm btn-dark w-100 mt-2">Bloquear Fecha/Hora</button>
             </form>
 
             <ul class="list-group list-group-flush">
@@ -299,7 +312,16 @@
                 <% blockedDates.forEach(hb => { %>
                   <li class="list-group-item d-flex justify-content-between align-items-center px-0">
                     <div>
-                      <div class="fw-bold text-danger"><%= hb.fecha %></div>
+                      <div class="fw-bold text-danger">
+                        <%= hb.fecha %>
+                        <% if (hb.hora_inicio && hb.hora_fin) { %>
+                          <span class="badge bg-danger ms-2"><%= hb.hora_inicio %> a <%= hb.hora_fin %></span>
+                        <% } else if (hb.hora_inicio) { %>
+                          <span class="badge bg-danger ms-2">Desde <%= hb.hora_inicio %></span>
+                        <% } else { %>
+                          <span class="badge bg-danger ms-2">Todo el día</span>
+                        <% } %>
+                      </div>
                       <small class="text-muted"><%= hb.motivo || 'Sin motivo' %></small>
                     </div>
                     <form action="/admin/horarios-bloqueados/<%= hb.id %>/delete" method="POST" class="form-delete">

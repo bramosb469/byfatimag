@@ -194,8 +194,10 @@ router.get('/api/horarios-disponibles/:fecha', async (req, res) => {
   }
 
   // Check blocked
-  const isBlocked = await db.prepare('SELECT id FROM horarios_bloqueados WHERE fecha = ?').get(fecha);
-  if (isBlocked) {
+  const blocks = await db.prepare('SELECT hora_inicio, hora_fin FROM horarios_bloqueados WHERE fecha = ?').all(fecha);
+  
+  const fullDayBlocked = blocks.some(b => !b.hora_inicio && !b.hora_fin);
+  if (fullDayBlocked) {
     return res.json([]);
   }
 
@@ -210,7 +212,28 @@ router.get('/api/horarios-disponibles/:fecha', async (req, res) => {
   while (currentMin + duracion <= endMin) {
     const h = Math.floor(currentMin / 60).toString().padStart(2, '0');
     const m = (currentMin % 60).toString().padStart(2, '0');
-    allSlots.push(`${h}:${m}`);
+    const slotStr = `${h}:${m}`;
+    
+    // Check if slot falls into any partial block
+    let isBlockedSlot = false;
+    for (const b of blocks) {
+      if (b.hora_inicio) {
+        const bStart = parseInt(b.hora_inicio.split(':')[0]) * 60 + parseInt(b.hora_inicio.split(':')[1]);
+        const bEnd = b.hora_fin ? (parseInt(b.hora_fin.split(':')[0]) * 60 + parseInt(b.hora_fin.split(':')[1])) : endMin;
+        const slotEnd = currentMin + duracion;
+        
+        // Block overlap logic: slot overlaps with block if slot starts before block ends AND slot ends after block starts
+        if (currentMin < bEnd && slotEnd > bStart) {
+          isBlockedSlot = true;
+          break;
+        }
+      }
+    }
+    
+    if (!isBlockedSlot) {
+      allSlots.push(slotStr);
+    }
+    
     currentMin += duracion;
   }
 

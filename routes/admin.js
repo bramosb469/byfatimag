@@ -349,7 +349,8 @@ router.post('/configuracion', upload.fields([{ name: 'about_imagen', maxCount: 1
 
 router.post('/horarios-bloqueados/nuevo', async (req, res) => {
   const db = getDb();
-  await db.prepare('INSERT INTO horarios_bloqueados (fecha, motivo) VALUES (?, ?)').run(req.body.fecha, req.body.motivo || '');
+  await db.prepare('INSERT INTO horarios_bloqueados (fecha, motivo, hora_inicio, hora_fin) VALUES (?, ?, ?, ?)')
+    .run(req.body.fecha, req.body.motivo || '', req.body.hora_inicio || null, req.body.hora_fin || null);
   res.redirect('/admin/configuracion');
 });
 

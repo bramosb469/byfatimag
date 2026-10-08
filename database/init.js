@@ -168,6 +168,13 @@ function initDatabase() {
       )`
     ];
     for (const sql of tables) await p.query(sql);
+    
+    try {
+      await p.query('ALTER TABLE horarios_bloqueados ADD COLUMN IF NOT EXISTS hora_inicio TEXT');
+      await p.query('ALTER TABLE horarios_bloqueados ADD COLUMN IF NOT EXISTS hora_fin TEXT');
+    } catch (e) {
+      console.log('Columnas hora_inicio y hora_fin ya existen o hubo un error:', e.message);
+    }
 
     // Configuracion por defecto (no pisa valores existentes)
     for (const d of defaults) {
