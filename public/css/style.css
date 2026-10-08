@@ -181,6 +181,13 @@ body {
   background-size: 50%;
 }
 
+/* CTA Section */
+.cta-section {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-text) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
 /* Footer */
 .footer { background-color: var(--color-text); position: relative; }
 .gold-line-top {
