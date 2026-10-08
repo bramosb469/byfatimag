@@ -61,10 +61,15 @@ router.get('/agendar/comprobante/:id', async (req, res) => {
 
   const doc = new PDFDocument({ size: 'A4', margin: 50 });
   
-  res.setHeader('Content-disposition', `attachment; filename=Turno-LuCejas-${turno.id}.pdf`);
-  res.setHeader('Content-type', 'application/pdf');
-  
-  doc.pipe(res);
+  const buffers = [];
+  doc.on('data', buffers.push.bind(buffers));
+  doc.on('end', () => {
+    const pdfData = Buffer.concat(buffers);
+    res.setHeader('Content-Length', Buffer.byteLength(pdfData));
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-disposition', `attachment; filename="Turno-LuCejas-${turno.id}.pdf"`);
+    res.end(pdfData);
+  });
   
   // PDF Content
   doc.rect(0, 0, doc.page.width, 120).fill(config.color_primario || '#C9A96E');
