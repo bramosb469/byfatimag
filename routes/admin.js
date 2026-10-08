@@ -330,13 +330,20 @@ router.post('/cuenta', async (req, res) => {
   res.redirect('/admin/configuracion?msg=cuenta_ok');
 });
 
-router.post('/configuracion', async (req, res) => {
+router.post('/configuracion', upload.fields([{ name: 'about_imagen', maxCount: 1 }]), async (req, res) => {
   const db = getDb();
   if (req.body.config) {
     for (const [clave, valor] of Object.entries(req.body.config)) {
       await db.prepare('INSERT INTO configuracion (clave, valor) VALUES (?, ?) ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor').run(clave, valor);
     }
   }
+  
+  if (req.files && req.files['about_imagen'] && req.files['about_imagen'][0]) {
+    const file = req.files['about_imagen'][0];
+    const aboutImageUrl = await saveFile(file, 'uploads');
+    await db.prepare('INSERT INTO configuracion (clave, valor) VALUES (?, ?) ON CONFLICT(clave) DO UPDATE SET valor = excluded.valor').run('about_imagen', aboutImageUrl);
+  }
+
   res.redirect('/admin/configuracion?msg=ok');
 });
 

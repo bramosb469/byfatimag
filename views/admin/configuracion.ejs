@@ -41,7 +41,7 @@
 
     <div class="row">
       <div class="col-lg-8">
-        <form action="/admin/configuracion" method="POST">
+        <form action="/admin/configuracion" method="POST" enctype="multipart/form-data">
           <div class="accordion" id="configAccordion">
             
             <!-- Info General -->
@@ -106,11 +106,21 @@
                 <div class="accordion-body">
                   <div class="mb-3">
                     <label class="form-label">Título de la sección</label>
-                    <input type="text" name="config[sobre_mi_titulo]" class="form-control" value="<%= config.sobre_mi_titulo || 'Sobre Mí' %>">
+                    <input type="text" name="config[about_titulo]" class="form-control" value="<%= config.about_titulo || config.sobre_mi_titulo || 'Sobre Mí' %>">
                   </div>
                   <div class="mb-3">
                     <label class="form-label">Texto principal</label>
-                    <textarea name="config[sobre_mi_texto]" class="form-control" rows="6"><%= config.sobre_mi_texto || '' %></textarea>
+                    <textarea name="config[about_texto]" class="form-control" rows="6"><%= config.about_texto || config.sobre_mi_texto || '' %></textarea>
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label">Imagen de la sección (Opcional)</label>
+                    <% if (config.about_imagen) { %>
+                      <div class="mb-2">
+                        <img src="<%= config.about_imagen %>" alt="Imagen actual" style="max-height: 150px; border-radius: 8px;">
+                      </div>
+                    <% } %>
+                    <input type="file" name="about_imagen" class="form-control" accept="image/*">
+                    <small class="text-muted">Si subes una imagen, reemplazará a la actual.</small>
                   </div>
                 </div>
               </div>
